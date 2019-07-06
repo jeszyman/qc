@@ -1,51 +1,117 @@
-##################################################
-###     Docker Image Development Process       ###
-##################################################
+FROM jeszyman/bioinformatics-toolkit
 
-FROM ubuntu:xenial
+# install multiqc
+## dependencies
+### python- in FROM
+### conda- in FROM 
+# pip install multiqc
 
-MAINTAINER Jeffrey Szymanski <jeszyman@gmail.com>
+RUN conda install -c bioconda multiqc -y
 
-LABEL toolbox of sequence file quality control and preprocessing tools
+# WORKS TO HERE 
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    git \ 
-    python-pip 
+# install cutadapt
+RUN pip install --user --upgrade cutadapt
 
-RUN pip install --upgrade pip
-RUN pip install --upgrade setuptools
-RUN pip install multiqc
-RUN git clone https://github.com/relipmoc/skewer.git
+# install fastqc
+# FASTQC
+ENV URL=http://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+ENV ZIP=fastqc_v0.11.5.zip
 
+RUN wget $URL/$ZIP -O $DST/$ZIP && \
+  unzip - $DST/$ZIP -d $DST && \
+  rm $DST/$ZIP && \
+  cd $DST/FastQC && \
+  chmod 755 fastqc && \
+  ln -s $DST/FastQC/fastqc /usr/local/bin/fastqc
 
+# install fastp
+RUN conda install -c bioconda fastp
 
-# https://hub.docker.com/r/mgibio/mark_duplicates-cwl/dockerfile
-RUN apt-get update -y && apt-get install -y \
-    apt-utils \
-    bzip2 \
-    default-jre \
-    wget
+# install flexbar
+RUN conda install -c bioconda flexbar
 
-# http://lomereiter.github.io/sambamba/docs/sambamba-view.html
-RUN mkdir /opt/sambamba/ \
-    && wget https://github.com/lomereiter/sambamba/releases/download/v0.6.4/sambamba_v0.6.4_linux.tar.bz2 \
-    && tar --extract --bzip2 --directory=/opt/sambamba --file=sambamba_v0.6.4_linux.tar.bz2 \
-    && ln -s /opt/sambamba/sambamba_v0.6.4 /usr/bin/sambamba
+# install bowtie2
+#RUN conda install -c bowtie2
 
-# http://broadinstitute.github.io/picard/
-RUN mkdir /opt/picard-2.18.1/ \
-    && cd /tmp/ \
-    && wget --no-check-certificate https://github.com/broadinstitute/picard/releases/download/2.18.1/picard.jar \
-    && mv picard.jar /opt/picard-2.18.1/ \
-    && ln -s /opt/picard-2.18.1 /opt/picard \
-    && ln -s /opt/picard-2.18.1 /usr/picard
+# install samtools
+RUN apt-get update \
+    && apt-get install -y \
+        build-essential \
+        bzip2 \
+        curl \
+        zlib1g-dev \
+        libncurses5-dev
 
-# COPY markduplicates_helper.sh /usr/bin/markduplicates_helper.sh
+ENV SAMTOOLS_VERSION 1.3.1
 
+WORKDIR /root
+RUN mkdir samtools \
+    && curl -fsSL https://github.com/samtools/samtools/releases/download/$SAMTOOLS_VERSION/samtools-$SAMTOOLS_VERSION.tar.bz2 \
+        | tar -jxC samtools --strip-components=1
 
-# ideas
-## doesn't work directly
-### https://hub.docker.com/r/broadinstitute/picard/dockerfile
+WORKDIR /root/samtools
+RUN ./configure \
+    && make all all-htslib \
+    && make install install-htslib
 
-# BUILD WORKS TO HERE
+# Clean Up
+RUN apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# install deeptools
+RUN conda install -c bioconda deeptools
+
+RUN mkdir -p /opt/tools
+
+WORKDIR /opt/tools
+
+# install skewer
+RUN \
+  wget -c https://downloads.sourceforge.net/project/skewer/Binaries/skewer-0.2.2-linux-x86_64 && \
+  chmod +x skewer-0.2.2-linux-x86_64 && \
+  cp skewer-0.2.2-linux-x86_64 /usr/local/bin/skewer
+
+# install mosdepth
+RUN conda install -c bioconda mosdepth
+
+ENV version 2.18.26
+
+ADD https://github.com/broadinstitute/picard/releases/download/${version}/picard.jar /opt
+
+# install preseq
+RUN conda install -c bioconda preseq -y
+
+# install qualimap
+# Install libraries
+RUN \
+  apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+  && rm -rf /var/lib/apt/lists/*
+
+# Setup ENV variables
+ENV \
+  PATH=$PATH:/opt/qualimap \
+  QUALIMAP_VERSION=2.2.1
+
+# Install BamQC
+RUN \
+  wget --quiet -O qualimap_v${QUALIMAP_VERSION}.zip \
+    https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v${QUALIMAP_VERSION}.zip \
+  && unzip qualimap_v${QUALIMAP_VERSION}.zip -d /opt/ \
+  && rm qualimap_v${QUALIMAP_VERSION}.zip \
+  && mv /opt/qualimap_v${QUALIMAP_VERSION} /opt/qualimap
+
+# Create UPPMAX directories
+RUN mkdir /pica /proj /scratch /sw
+
+# install samblaster
+RUN conda install -c bioconda samblaster
+
+# IDEAS
+# install GATK
+# install biobloomtools
+## dependencies
+RUN apt-get install gcc
+#?boost?
+#?zlibdev?
