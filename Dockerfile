@@ -8,7 +8,6 @@ FROM jeszyman/bioinformatics-toolkit
 
 RUN conda install -c bioconda multiqc -y
 
-# WORKS TO HERE 
 
 # install cutadapt
 RUN pip install --user --upgrade cutadapt
