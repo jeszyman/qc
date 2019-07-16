@@ -4,6 +4,8 @@ FROM ubuntu:xenial
 # Python 2 and 3, plus packages
 
 RUN apt-get update && apt-get install -y \
+  wget \
+  unzip \
   curl 
 
 
@@ -12,14 +14,17 @@ ENV CONDA_DIR /opt/conda
 ENV PATH $CONDA_DIR/bin:$PATH
 
 # Install conda
-RUN cd /tmp && \
-    mkdir -p $CONDA_DIR && \
-    curl -s https://repo.continuum.io/miniconda/Miniconda3-4.3.21-Linux-x86_64.sh -o miniconda.sh && \
-    /bin/bash miniconda.sh -f -b -p $CONDA_DIR && \
-    rm miniconda.sh && \
-    $CONDA_DIR/bin/conda config --system --add channels conda-forge && \
-    $CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
-    conda clean -tipsy
+RUN cd /tmp && wget https://repo.anaconda.com/miniconda/Miniconda2-4.5.11-Linux-x86_64.sh && \
+    /bin/bash /tmp/miniconda.sh -b -p /opt/conda 
+
+#RUN cd /tmp && \
+#   mkdir -p $CONDA_DIR && \
+#   curl -s https://repo.continuum.io/miniconda/Miniconda3-4.3.21-Linux-x86_64.sh -o miniconda.sh && \
+#   /bin/bash miniconda.sh -f -b -p $CONDA_DIR && \
+#   rm miniconda.sh && \
+#    $CONDA_DIR/bin/conda config --system --add channels conda-forge && \
+#    $CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
+#    conda clean -tipsy
 
 # install multiqc
 ## dependencies
@@ -37,7 +42,6 @@ RUN pip install --user --upgrade cutadapt
 # fastqc requires java
 RUN apt-get update && apt-get install -y \
   curl \
-  unzip \
   perl \
   openjdk-8-jre-headless
 
