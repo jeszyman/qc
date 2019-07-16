@@ -1,4 +1,25 @@
-FROM jeszyman/bioinformatics-toolkit
+FROM ubuntu:xenial
+
+#################################
+# Python 2 and 3, plus packages
+
+RUN apt-get update && apt-get install -y \
+  curl 
+
+
+# Configure environment
+ENV CONDA_DIR /opt/conda
+ENV PATH $CONDA_DIR/bin:$PATH
+
+# Install conda
+RUN cd /tmp && \
+    mkdir -p $CONDA_DIR && \
+    curl -s https://repo.continuum.io/miniconda/Miniconda3-4.3.21-Linux-x86_64.sh -o miniconda.sh && \
+    /bin/bash miniconda.sh -f -b -p $CONDA_DIR && \
+    rm miniconda.sh && \
+    $CONDA_DIR/bin/conda config --system --add channels conda-forge && \
+    $CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
+    conda clean -tipsy
 
 # install multiqc
 ## dependencies
@@ -25,7 +46,7 @@ ENV FASTQC_URL http://www.bioinformatics.babraham.ac.uk/projects/fastqc/
 ENV FASTQC_VERSION 0.11.4
 ENV FASTQC_RELEASE fastqc_v${FASTQC_VERSION}.zip
 ENV DEST_DIR /opt/
-http://www.bioinformatics.babraham.ac.uk/projects/download.html#fastqc
+#http://www.bioinformatics.babraham.ac.uk/projects/download.html#fastqc
 # Make destination directory
 RUN mkdir -p $DEST_DIR
 
