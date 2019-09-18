@@ -1,4 +1,5 @@
 FROM ubuntu:xenial
+
 #
 ################################################################################
 # conda installs
@@ -21,7 +22,8 @@ RUN conda install -c bioconda fastp
 #RUN conda install -c bioconda multiqc 
 ## samtools
 RUN conda install -c bioconda samtools 
-
+## fastqc
+RUN conda install -c bioconda fastqc
 
 ################################################################################
 RUN pip install multiqc
