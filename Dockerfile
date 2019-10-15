@@ -1,5 +1,23 @@
 FROM ubuntu:xenial
 
+# Install libraries
+RUN \
+  apt-get update && apt-get install -y --no-install-recommends \
+   unzip \
+   wget \
+  && rm -rf /var/lib/apt/lists/*
+
+# Setup ENV variables
+ENV PATH=$PATH:/opt/qualimap 
+#
+# Install BamQC
+RUN wget --no-check-certificate -O qualimap.zip https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.2.1.zip 
+RUN unzip qualimap.zip -d /opt/ 
+RUN rm qualimap.zip 
+
+
+
+
 #
 ################################################################################
 # conda installs

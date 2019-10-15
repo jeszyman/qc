@@ -1,0 +1,2 @@
+http://qualimap.bioinfo.cipf.es/
+https://github.com/brentp/goleft/tree/master/indexcov
