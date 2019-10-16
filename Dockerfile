@@ -42,7 +42,7 @@ RUN conda install -c bioconda fastp
 RUN conda install -c bioconda samtools 
 ## fastqc
 RUN conda install -c bioconda fastqc
-
+RUN conda install -c bioconda mosdepth
 ################################################################################
 RUN pip install multiqc
 
